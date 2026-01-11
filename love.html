@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💖 For You 💖</title>
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at bottom, #0a0026, #000);
+            overflow: hidden;
+            height: 100%;
+            font-family: "PingFang SC", "Arial";
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .tip {
+            position: absolute;
+            bottom: 8%;
+            width: 100%;
+            text-align: center;
+            color: #ff9ddc;
+            font-size: 14px;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%,100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div class="tip">✨ 轻触屏幕 ✨</div>
+
+<script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+
+    window.onresize = () => {
+        canvas.width = innerWidth;
+        canvas.height = innerHeight;
+    };
+
+    /* 💫 爱心 + 名字粒子 */
+    const NAME = "你的名字"; // 🔴 改成她的名字
+
+    let particles = [];
+
+    function createTextParticles(text) {
+        const off = document.createElement("canvas");
+        off.width = canvas.width;
+        off.height = canvas.height;
+        const offCtx = off.getContext("2d");
+
+        offCtx.fillStyle = "#fff";
+        offCtx.font = "bold 80px PingFang SC";
+        offCtx.textAlign = "center";
+        offCtx.fillText(text, off.width / 2, off.height / 2);
+
+        const img = offCtx.getImageData(0, 0, off.width, off.height);
+
+        particles = [];
+        for (let y = 0; y < off.height; y += 6) {
+            for (let x = 0; x < off.width; x += 6) {
+                const i = (y * off.width + x) * 4;
+                if (img.data[i] > 150) {
+                    particles.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        tx: x,
+                        ty: y,
+                        r: Math.random() * 2 + 1
+                    });
+                }
+            }
+        }
+    }
+
+    createTextParticles(NAME);
+
+    /* 🌌 背景星空 */
+    let stars = Array.from({length: 200}, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        a: Math.random()
+    }));
+
+    function drawStars() {
+        stars.forEach(s => {
+            ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+            ctx.fillRect(s.x, s.y, 1, 1);
+            s.a += (Math.random() - 0.5) * 0.05;
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        drawStars();
+
+        particles.forEach(p => {
+            p.x += (p.tx - p.x) * 0.05;
+            p.y += (p.ty - p.y) * 0.05;
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+            ctx.fillStyle = "#ff6fb7";
+            ctx.shadowColor = "#ff6fb7";
+            ctx.shadowBlur = 10;
+            ctx.fill();
+        });
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+</script>
+</body>
+</html>
