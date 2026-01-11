@@ -27,23 +27,14 @@
     const canvas=document.getElementById("canvas");
     const ctx=canvas.getContext("2d");
 
-    // 💡 处理高分屏，保证粒子清晰
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
-    ctx.scale(dpr, dpr);
-
-    function resizeCanvas(){
-        canvas.width = window.innerWidth * dpr;
-        canvas.height = window.innerHeight * dpr;
-        ctx.scale(dpr, dpr);
-    }
-    window.onresize = resizeCanvas;
+    // 💡 固定 Canvas 尺寸（不随屏幕变化自适应）
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     /* =====================
        名字设置
     ===================== */
-    const NAME="刘佳佳"; // 🔴 改成她的名字
+    const NAME="哈哈哈 是不是挺无语的"; // 🔴 改成她的名字
 
     /* =====================
        粒子数据
@@ -53,12 +44,12 @@
 
     function createTextTargets(text){
         const off=document.createElement("canvas");
-        off.width=canvas.width/dpr;
-        off.height=canvas.height/dpr;
+        off.width=canvas.width;
+        off.height=canvas.height;
         const offCtx=off.getContext("2d");
 
-        // 💡 自动适应屏幕宽度
-        let fontSize = Math.min(100, off.width / (text.length * 1.2));
+        // 💡 固定字体大小
+        const fontSize = 80;
         offCtx.font=`bold ${fontSize}px PingFang SC`;
         offCtx.textAlign="center";
         offCtx.textBaseline="middle";
@@ -68,7 +59,7 @@
         const img=offCtx.getImageData(0,0,off.width,off.height);
 
         textTargets=[];
-        const gap = 4; // 💡 粒子间距变小，更清晰
+        const gap = 4; // 粒子间距
         for(let y=0;y<off.height;y+=gap){
             for(let x=0;x<off.width;x+=gap){
                 const i=(y*off.width+x)*4;
@@ -77,11 +68,11 @@
         }
 
         particles=textTargets.map(t=>({
-            x:Math.random()*canvas.width/dpr,
-            y:Math.random()*canvas.height/dpr,
+            x:Math.random()*canvas.width,
+            y:Math.random()*canvas.height,
             tx:t.x,
             ty:t.y,
-            r:Math.random()*1.5+0.8, // 💡 粒子更小，轮廓清晰
+            r:Math.random()*1.5+0.8,
             hue:Math.random()*360,
             offset: Math.random()*Math.PI*2,
             alpha: Math.random()*0.5+0.5
@@ -93,8 +84,8 @@
        星空背景
     ===================== */
     let stars=Array.from({length:200},()=>({
-        x:Math.random()*canvas.width/dpr,
-        y:Math.random()*canvas.height/dpr,
+        x:Math.random()*canvas.width,
+        y:Math.random()*canvas.height,
         a:Math.random(),
         va:(Math.random()*0.02+0.005)
     }));
@@ -146,7 +137,7 @@
        主动画循环
     ===================== */
     function animate(){
-        ctx.clearRect(0,0,canvas.width/dpr,canvas.height/dpr);
+        ctx.clearRect(0,0,canvas.width,canvas.height);
         drawStars();
 
         const time = Date.now()/500;
@@ -163,7 +154,7 @@
             ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
             ctx.fillStyle=`hsla(${p.hue},100%,70%,${p.alpha})`;
             ctx.shadowColor=`hsla(${p.hue},100%,70%,${p.alpha})`;
-            ctx.shadowBlur=12; // 💡 发光更柔和
+            ctx.shadowBlur=12;
             ctx.fill();
 
             // 粒子轻微呼吸
