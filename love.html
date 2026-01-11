@@ -41,8 +41,7 @@
 <body>
 
 <canvas id="canvas"></canvas>
-
-<div class="tip">✨ 轻触屏幕 ✨</div>
+<div class="tip">✨ 轻触屏幕，会有惊喜 ✨</div>
 
 <script>
     const canvas = document.getElementById("canvas");
@@ -56,45 +55,58 @@
         canvas.height = innerHeight;
     };
 
-    /* 💫 爱心 + 名字粒子 */
-    const NAME = "你的名字"; // 🔴 改成她的名字
+    /* =====================
+       1️⃣ 名字设置（只改这里）
+    ===================== */
+    const NAME = "你的名字"; // ← 改成她的名字
 
+    /* =====================
+       2️⃣ 粒子数据
+    ===================== */
     let particles = [];
+    let textTargets = [];
 
-    function createTextParticles(text) {
+    /* 生成名字粒子目标点 */
+    function createTextTargets(text) {
         const off = document.createElement("canvas");
         off.width = canvas.width;
         off.height = canvas.height;
         const offCtx = off.getContext("2d");
 
+        offCtx.clearRect(0,0,off.width,off.height);
         offCtx.fillStyle = "#fff";
         offCtx.font = "bold 80px PingFang SC";
         offCtx.textAlign = "center";
+        offCtx.textBaseline = "middle";
         offCtx.fillText(text, off.width / 2, off.height / 2);
 
         const img = offCtx.getImageData(0, 0, off.width, off.height);
 
-        particles = [];
+        textTargets = [];
         for (let y = 0; y < off.height; y += 6) {
             for (let x = 0; x < off.width; x += 6) {
                 const i = (y * off.width + x) * 4;
                 if (img.data[i] > 150) {
-                    particles.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        tx: x,
-                        ty: y,
-                        r: Math.random() * 2 + 1
-                    });
+                    textTargets.push({ x, y });
                 }
             }
         }
+
+        particles = textTargets.map(t => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            tx: t.x,
+            ty: t.y,
+            r: Math.random() * 2 + 1
+        }));
     }
 
-    createTextParticles(NAME);
+    createTextTargets(NAME);
 
-    /* 🌌 背景星空 */
-    let stars = Array.from({length: 200}, () => ({
+    /* =====================
+       3️⃣ 星空背景
+    ===================== */
+    let stars = Array.from({length: 180}, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         a: Math.random()
@@ -105,19 +117,36 @@
             ctx.fillStyle = `rgba(255,255,255,${s.a})`;
             ctx.fillRect(s.x, s.y, 1, 1);
             s.a += (Math.random() - 0.5) * 0.05;
+            if (s.a < 0) s.a = 0;
+            if (s.a > 1) s.a = 1;
         });
     }
 
+    /* =====================
+       4️⃣ 点击交互（关键）
+    ===================== */
+    canvas.addEventListener("click", e => {
+        particles.forEach(p => {
+            p.x = e.clientX;
+            p.y = e.clientY;
+        });
+    });
+
+    /* =====================
+       5️⃣ 主动画循环
+    ===================== */
     function animate() {
         ctx.clearRect(0,0,canvas.width,canvas.height);
+
         drawStars();
 
         particles.forEach(p => {
-            p.x += (p.tx - p.x) * 0.05;
-            p.y += (p.ty - p.y) * 0.05;
+            // 回归名字位置（柔和）
+            p.x += (p.tx - p.x) * 0.06;
+            p.y += (p.ty - p.y) * 0.06;
 
             ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
             ctx.fillStyle = "#ff6fb7";
             ctx.shadowColor = "#ff6fb7";
             ctx.shadowBlur = 10;
