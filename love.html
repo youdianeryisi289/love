@@ -3,160 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💖 For You 💖</title>
-
+    <title>💖 炫酷爱心动画 💖</title>
     <style>
         html, body {
-            margin: 0;
-            padding: 0;
+            margin:0; padding:0; overflow:hidden;
+            height:100%; font-family:"PingFang SC","Arial";
             background: radial-gradient(circle at bottom, #0a0026, #000);
-            overflow: hidden;
-            height: 100%;
-            font-family: "PingFang SC", "Arial";
         }
-
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
+        canvas {position:absolute; top:0; left:0;}
         .tip {
-            position: absolute;
-            bottom: 8%;
-            width: 100%;
-            text-align: center;
-            color: #ff9ddc;
-            font-size: 14px;
-            animation: blink 2s infinite;
+            position:absolute; bottom:5%; width:100%; text-align:center;
+            color:#ff9ddc; font-size:14px; animation:blink 2s infinite;
         }
-
-        @keyframes blink {
-            0%,100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }
+        @keyframes blink {0%,100%{opacity:0.3;}50%{opacity:1;}}
     </style>
 </head>
-
 <body>
 
 <canvas id="canvas"></canvas>
-<div class="tip">✨ 轻触屏幕，会有惊喜 ✨</div>
+<div class="tip">✨ 轻触屏幕，会有小惊喜 ✨</div>
 
 <script>
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-
-    canvas.width = innerWidth;
-    canvas.height = innerHeight;
-
-    window.onresize = () => {
-        canvas.width = innerWidth;
-        canvas.height = innerHeight;
-    };
+    const canvas=document.getElementById("canvas");
+    const ctx=canvas.getContext("2d");
+    canvas.width=innerWidth; canvas.height=innerHeight;
+    window.onresize=()=>{canvas.width=innerWidth; canvas.height=innerHeight;};
 
     /* =====================
-       1️⃣ 名字设置（只改这里）
+       名字设置
     ===================== */
-    const NAME = "你的名字"; // ← 改成她的名字
+    const NAME="你的名字"; // 🔴 改成她的名字
 
     /* =====================
-       2️⃣ 粒子数据
+       粒子数据
     ===================== */
-    let particles = [];
-    let textTargets = [];
+    let particles=[];
+    let textTargets=[];
 
-    /* 生成名字粒子目标点 */
-    function createTextTargets(text) {
-        const off = document.createElement("canvas");
-        off.width = canvas.width;
-        off.height = canvas.height;
-        const offCtx = off.getContext("2d");
-
-        offCtx.clearRect(0,0,off.width,off.height);
-        offCtx.fillStyle = "#fff";
-        offCtx.font = "bold 80px PingFang SC";
-        offCtx.textAlign = "center";
-        offCtx.textBaseline = "middle";
-        offCtx.fillText(text, off.width / 2, off.height / 2);
-
-        const img = offCtx.getImageData(0, 0, off.width, off.height);
-
-        textTargets = [];
-        for (let y = 0; y < off.height; y += 6) {
-            for (let x = 0; x < off.width; x += 6) {
-                const i = (y * off.width + x) * 4;
-                if (img.data[i] > 150) {
-                    textTargets.push({ x, y });
-                }
+    function createTextTargets(text){
+        const off=document.createElement("canvas");
+        off.width=canvas.width; off.height=canvas.height;
+        const offCtx=off.getContext("2d");
+        offCtx.fillStyle="#fff";
+        offCtx.font="bold 80px PingFang SC";
+        offCtx.textAlign="center"; offCtx.textBaseline="middle";
+        offCtx.fillText(text, off.width/2, off.height/2);
+        const img=offCtx.getImageData(0,0,off.width,off.height);
+        textTargets=[];
+        for(let y=0;y<off.height;y+=6){
+            for(let x=0;x<off.width;x+=6){
+                const i=(y*off.width+x)*4;
+                if(img.data[i]>150) textTargets.push({x,y});
             }
         }
-
-        particles = textTargets.map(t => ({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            tx: t.x,
-            ty: t.y,
-            r: Math.random() * 2 + 1
+        particles=textTargets.map(t=>({
+            x:Math.random()*canvas.width,
+            y:Math.random()*canvas.height,
+            tx:t.x,
+            ty:t.y,
+            r:Math.random()*2+1,
+            hue:Math.random()*360
         }));
     }
-
     createTextTargets(NAME);
 
     /* =====================
-       3️⃣ 星空背景
+       星空背景
     ===================== */
-    let stars = Array.from({length: 180}, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        a: Math.random()
+    let stars=Array.from({length:200},()=>({
+        x:Math.random()*canvas.width,
+        y:Math.random()*canvas.height,
+        a:Math.random(),
+        va:(Math.random()*0.02+0.005)
     }));
-
-    function drawStars() {
-        stars.forEach(s => {
-            ctx.fillStyle = `rgba(255,255,255,${s.a})`;
-            ctx.fillRect(s.x, s.y, 1, 1);
-            s.a += (Math.random() - 0.5) * 0.05;
-            if (s.a < 0) s.a = 0;
-            if (s.a > 1) s.a = 1;
+    function drawStars(){
+        stars.forEach(s=>{
+            ctx.fillStyle=`rgba(255,255,255,${s.a})`;
+            ctx.fillRect(s.x,s.y,1,1);
+            s.a+=s.va;
+            if(s.a>1){s.a=1;s.va*=-1;}
+            if(s.a<0){s.a=0;s.va*=-1;}
         });
     }
 
     /* =====================
-       4️⃣ 点击交互（关键）
+       点击交互（炫酷粒子+小星星）
     ===================== */
-    canvas.addEventListener("click", e => {
-        particles.forEach(p => {
-            p.x = e.clientX;
-            p.y = e.clientY;
-        });
+    canvas.addEventListener("click", e=>{
+        // 爱心粒子爆开
+        for(let i=0;i<20;i++){
+            particles.push({
+                x:e.clientX,
+                y:e.clientY,
+                tx:e.clientX + (Math.random()-0.5)*300,
+                ty:e.clientY + (Math.random()-0.5)*300,
+                r:Math.random()*3+1,
+                hue:Math.random()*360
+            });
+        }
+        // 小星星飞溅
+        for(let i=0;i<10;i++){
+            particles.push({
+                x:e.clientX,
+                y:e.clientY,
+                tx:e.clientX + (Math.random()-0.5)*500,
+                ty:e.clientY + (Math.random()-0.5)*500,
+                r:Math.random()*1.5+0.5,
+                hue:Math.random()*360
+            });
+        }
     });
 
     /* =====================
-       5️⃣ 主动画循环
+       主动画循环
     ===================== */
-    function animate() {
+    function animate(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
-
         drawStars();
+        particles.forEach((p,i)=>{
+            // 粒子回到名字位置
+            p.x+=(p.tx-p.x)*0.06;
+            p.y+=(p.ty-p.y)*0.06;
 
-        particles.forEach(p => {
-            // 回归名字位置（柔和）
-            p.x += (p.tx - p.x) * 0.06;
-            p.y += (p.ty - p.y) * 0.06;
-
+            // 绘制粒子
             ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = "#ff6fb7";
-            ctx.shadowColor = "#ff6fb7";
-            ctx.shadowBlur = 10;
+            ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+            ctx.fillStyle=`hsl(${p.hue},100%,70%)`;
+            ctx.shadowColor=`hsl(${p.hue},100%,70%)`;
+            ctx.shadowBlur=10;
             ctx.fill();
-        });
 
+            // 粒子呼吸闪光
+            p.r += Math.sin(Date.now()/200 + i)/30;
+        });
         requestAnimationFrame(animate);
     }
-
     animate();
 </script>
+
 </body>
 </html>
